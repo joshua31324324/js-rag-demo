@@ -1,0 +1,25 @@
+{
+  "name": "assignment3-streaming-chat",
+  "version": "1.0.0",
+  "description": "LangChain streaming chat with OpenAI and Express",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "langchain",
+    "openai",
+    "streaming",
+    "express",
+    "sse"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/openai": "^0.0.28",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

@@ -3,9 +3,14 @@ import { config } from 'dotenv';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
 import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { OpenAIEmbeddings } from '@langchain/openai';
-import { ChatOpenAI } from '@langchain/openai';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import path from 'path'; // Import path module
+import { fileURLToPath } from 'url'; // Import fileURLToPath
+
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
 config();
@@ -35,7 +40,10 @@ async function runRAGDemo() {
     
     // Step 1: Load documents
     console.log('\n📚 Loading documents...');
-    const loader = new DirectoryLoader('./documents', {
+    // Construct the absolute path to the documents directory
+    const documentsPath = path.join(__dirname, 'documents'); 
+    console.log(`Looking for documents in: ${documentsPath}`); // Add logging
+    const loader = new DirectoryLoader(documentsPath, {
       '.txt': (path) => new TextLoader(path)
     });
     

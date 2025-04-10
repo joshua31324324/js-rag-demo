@@ -1,0 +1,7 @@
+The RAG Chatbot Project integrates several key technologies.
+It uses Node.js and Express for the backend server.
+Socket.IO is used for real-time, bidirectional communication between the server and clients.
+LangChain.js orchestrates the Retrieval-Augmented Generation process.
+OpenAI provides the embedding models and the large language model (LLM) for generating responses.
+Vector stores, like an in-memory one for this demo, hold document embeddings for quick retrieval.
+The goal is to create a chatbot that can answer questions based on a provided knowledge base.

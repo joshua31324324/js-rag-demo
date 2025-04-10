@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chat - Unit 3</title>
+    <link rel="stylesheet" href="/style.css"> <!-- Link to the CSS file -->
+</head>
+<body>
+    <h1>Unit 3: RAG-Powered Chat</h1>
+
+    <div id="chat-container">
+        <div id="messages"></div>
+        <div id="typing-indicator" style="display: none;"><i>AI is thinking...</i></div>
+        <input id="username-input" type="text" placeholder="Enter your username">
+        <input id="message-input" type="text" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/client.js"></script> <!-- Link to the client-side JavaScript -->
+</body>
+</html>

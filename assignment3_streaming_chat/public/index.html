@@ -1,0 +1,41 @@
+<!DOCTYPE html> <!-- Standard HTML5 doctype declaration -->
+<html lang="en"> <!-- Root HTML element, specifying English language -->
+<head>
+    <!-- Metadata section -->
+    <meta charset="UTF-8"> <!-- Specifies the character encoding for the document (UTF-8 is standard) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Configures the viewport for responsive design -->
+    <title>LangChain Streaming Chat</title> <!-- Sets the title displayed in the browser tab -->
+    
+    <!-- Google Fonts: Preconnect for performance and link to the 'Inter' font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Link to the external CSS stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body> <!-- Main content of the HTML document -->
+
+    <!-- Main container for the chat interface -->
+    <div class="container">
+        <!-- Heading for the chat application -->
+        <h1>LangChain Streaming Chat</h1>
+        
+        <!-- Chatbox area where messages will be displayed -->
+        <div id="chatbox">
+            <!-- Messages dynamically added here by JavaScript -->
+        </div>
+        
+        <!-- Form for user input -->
+        <form id="chat-form">
+            <!-- Text input field for typing messages -->
+            <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required>
+            <!-- Button to submit the message -->
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
+
+    <!-- Link to the external JavaScript file for client-side logic -->
+    <script src="client.js"></script>
+</body>
+</html>

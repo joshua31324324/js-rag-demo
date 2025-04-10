@@ -1,0 +1,234 @@
+/* Define CSS Custom Properties based on Layout Specification */
+:root {
+    /* Typography */
+    --font-primary: 'Inter', sans-serif;
+    --font-size-base: 16px; /* Body Text */
+    --font-size-h1: 25px; /* Heading */
+    --font-size-small: 12.8px; /* Small text, if needed */
+    --line-height-base: 1.6;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+
+    /* Spacing Scale (Base Unit: 8px, Ratio: 1.5 approx) */
+    --space-xs: 8px;   /* 1 * base unit */
+    --space-s: 12px;   /* 1.5 * base unit */
+    --space-m: 16px;   /* 2 * base unit */
+    --space-l: 24px;   /* 3 * base unit */
+    --space-xl: 32px;  /* 4 * base unit */
+
+    /* Colors */
+    --color-text: #1A1A1A;
+    --color-background: #F9F9FA;
+    --color-container-bg: #ffffff;
+    --color-user-msg-bg: #005EA2; /* Desaturated Blue */
+    --color-user-msg-text: #ffffff;
+    --color-ai-msg-bg: #EAEAEF; /* Lighter Neutral Gray */
+    --color-ai-msg-text: var(--color-text);
+    --color-border: #DCDCE0; /* Subtle Accent Gray */
+    --color-primary: #007aff; /* Keep original blue for primary interactive elements */
+    --color-primary-hover: #005ecb; /* Keep original hover */
+    --color-primary-focus-shadow: rgba(0, 122, 255, 0.25); /* Slightly adjusted focus */
+    --color-disabled: #a0cfff; /* Keep original disabled */
+
+    /* Borders & Radii */
+    --border-radius-container: 8px;
+    --border-radius-input: 6px;
+    --border-radius-button: 6px;
+    --border-radius-message: 12px;
+    --border-subtle: 1px solid var(--color-border);
+}
+
+/* General body styling */
+body {
+    font-family: var(--font-primary);
+    margin: 0;
+    background-color: var(--color-background);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--color-text);
+    font-size: var(--font-size-base); /* Set base font size */
+    line-height: var(--line-height-base); /* Set base line height */
+}
+
+/* Styling for the main chat container */
+.container {
+    background-color: var(--color-container-bg);
+    border-radius: var(--border-radius-container);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* Soften shadow */
+    width: 90%;
+    max-width: 960px; /* Increase max-width per spec */
+    display: flex;
+    flex-direction: column;
+    height: 85vh;
+    overflow: hidden;
+}
+
+/* Styling for the main heading */
+h1 {
+    text-align: center;
+    color: var(--color-text);
+    padding: var(--space-l) var(--space-m); /* Use spacing scale */
+    margin: 0;
+    border-bottom: var(--border-subtle); /* Use subtle border */
+    font-size: var(--font-size-h1); /* Use h1 font size */
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.3; /* Adjust line-height for heading */
+}
+
+/* Styling for the chat message display area */
+#chatbox {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: var(--space-l); /* Use spacing scale */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m); /* Use spacing scale for gap (approx 1 line height) */
+    scroll-behavior: smooth; /* Add smooth scrolling */
+}
+
+/* Animation for message fade-in */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Base styling for individual messages */
+.message {
+    padding: var(--space-s) var(--space-m); /* Use spacing scale */
+    border-radius: var(--border-radius-message); /* Use spec radius */
+    max-width: 75%; /* Adjusted for potentially slightly longer lines, monitor */
+    word-wrap: break-word;
+    line-height: var(--line-height-base); /* Ensure consistent line height */
+    animation: fadeIn 0.3s ease-out; /* Apply fade-in animation */
+}
+
+/* Specific styling for user messages */
+.user-message {
+    background-color: var(--color-user-msg-bg); /* Use spec color */
+    color: var(--color-user-msg-text);
+    align-self: flex-end;
+    border-bottom-right-radius: var(--border-radius-message); /* Maintain consistent radius */
+}
+
+/* Specific styling for AI messages */
+.ai-message {
+    background-color: var(--color-ai-msg-bg); /* Use spec color */
+    color: var(--color-ai-msg-text);
+    align-self: flex-start;
+    border-bottom-left-radius: var(--border-radius-message); /* Maintain consistent radius */
+}
+
+/* Styling for AI error messages */
+.ai-message.error-message {
+    background-color: #ffebee; /* Light red background for errors */
+    color: #c62828; /* Darker red text for errors */
+    border: 1px solid #e57373; /* Subtle red border */
+}
+
+/* Styling for code blocks within messages */
+.message code {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    background-color: rgba(0, 0, 0, 0.05); /* Subtle background for inline code */
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.message pre {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: var(--space-s);
+    border-radius: var(--border-radius-input); /* Match input radius */
+    overflow-x: auto; /* Allow horizontal scroll for long code lines */
+    font-size: 0.9em;
+    line-height: 1.4; /* Slightly tighter line-height for code */
+    margin-top: var(--space-xs);
+    margin-bottom: var(--space-xs);
+}
+
+.message pre code {
+    background-color: transparent; /* Reset background for code inside pre */
+    padding: 0;
+    border-radius: 0;
+}
+
+/* Styling for the chat input form area */
+#chat-form {
+    display: flex;
+    align-items: center;
+    padding: var(--space-m); /* Use spacing scale */
+    border-top: var(--border-subtle); /* Use subtle border */
+    background-color: var(--color-container-bg);
+}
+
+/* Styling for the message text input field */
+#message-input {
+    flex-grow: 1;
+    padding: var(--space-s) var(--space-m); /* Use spacing scale */
+    border: 1px solid var(--color-border); /* Use subtle border color */
+    border-radius: var(--border-radius-input); /* Use spec radius */
+    margin-right: var(--space-s); /* Use spacing scale */
+    font-size: var(--font-size-base); /* Use base font size */
+    line-height: var(--line-height-base);
+    background-color: var(--color-container-bg); /* Ensure consistency */
+    color: var(--color-text);
+}
+
+/* Styling for the input field when focused */
+#message-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-focus-shadow); /* Slightly thicker focus ring */
+}
+
+/* Styling for the send button */
+#send-button {
+    padding: var(--space-s) var(--space-l); /* Use spacing scale */
+    background-color: var(--color-primary);
+    color: var(--color-user-msg-text);
+    border: none;
+    border-radius: var(--border-radius-button); /* Use spec radius */
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium); /* Use medium weight */
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+    line-height: var(--line-height-base); /* Match input line-height */
+}
+
+/* Styling for the send button on hover */
+#send-button:hover {
+    background-color: var(--color-primary-hover);
+}
+
+/* Styling for the send button when focused - Added for consistency */
+#send-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-primary-focus-shadow); /* Match input focus */
+}
+
+/* Styling for the send button when disabled */
+#send-button:disabled {
+    background-color: var(--color-disabled);
+    cursor: not-allowed;
+}
+
+/* Styling for the AI message loading indicator - no changes needed */
+.loading::after {
+    content: '...'; /* Display three dots */
+    display: inline-block; /* Treat as an inline block */
+    vertical-align: bottom; /* Align dots with the bottom of the text */
+    width: 1em; /* Set a fixed width for alignment */
+    text-align: left; /* Align dots to the left within their space */
+    animation: loading-dots 1.4s infinite; /* Apply the pulsing animation */
+}
+
+/* Keyframes animation for the loading dots */
+@keyframes loading-dots {
+    0%, 20% { content: '.'; } /* Show one dot */
+    40% { content: '..'; } /* Show two dots */
+    60%, 100% { content: '...'; } /* Show three dots */
+}
