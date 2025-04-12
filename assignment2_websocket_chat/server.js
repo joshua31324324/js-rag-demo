@@ -48,6 +48,24 @@ app.get('/', (req, res) => {
 // 1. ANONYMOUS: It has no name.
 // 2. A CALLBACK: `io.on` will call this function back when a 'connection' event happens.
 // 3. ASYNC: Marked with `async` so we can use `await` inside it.
+const inputBox = document.getElementById('messageInput');
+
+inputBox.addEventListener('input', () => {
+  socket.emit('typing'); // Notify the server that typing has started
+});
+
+inputBox.addEventListener('blur', () => {
+  socket.emit('stop typing'); // Notify the server that typing has stopped
+});
+// Listen for 'typing' event from the server
+socket.on('typing', (username) => {
+  typingIndicator.textContent = `${username} is typing...`;
+});
+
+// Listen for 'stop typing' event from the server
+socket.on('stop typing', (username) => {
+  typingIndicator.textContent = '';
+});
 io.on('connection', async (socket) => {
   console.log('✅ A user connected:', socket.id); // Log when a new client connects
 
@@ -107,7 +125,24 @@ io.on('connection', async (socket) => {
        socket.emit('system message', "Please set a username before sending messages.");
     }
   });
+  socket.on ('typing', () => {
+    const username = users[socket.id];
+    if (username) {
+      console.log(`✍️ ${username} is typing...`);
+      // Broadcast the typing event to all other users
+      socket.broadcast.emit('typing', username);
+    }
+  });
+  socket.on ('stop typing', () => {
+    const username = users[socket.id];
+    if (username) {
+      console.log(`✍️ ${username} stopped typing...`);
+      // Broadcast the stop typing event to all other users
+      socket.broadcast.emit('stop typing', username);
+    }
+  });
 });
+
 // --- End Socket.IO Logic ---
 
 
