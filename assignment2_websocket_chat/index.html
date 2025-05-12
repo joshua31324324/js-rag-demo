@@ -1,96 +1,129 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Simple WebSocket Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
     <style>
         body { margin: 0; padding-bottom: 3rem; font-family: sans-serif; }
-        #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-        #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-        #input:focus { outline: none; }
-        #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
-        #messages { list-style-type: none; margin: 0; padding: 0; }
+        body.dark-mode { background-color: #222; color: white; }
+        #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; }
+        #input, #usernameInput { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
         #messages > li { padding: 0.5rem 1rem; }
-        #messages > li:nth-child(odd) { background: #efefef; }
+        #darkModeToggle { position: fixed; top: 10px; right: 10px; padding: 5px; }
     </style>
 </head>
 <body>
+    <button id="darkModeToggle">Toggle Dark Mode</button>
     <ul id="messages"></ul>
-    <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
+
+    <p id="typing-indicator"></p>
+
+    <form id="form">
+        <label for="input">Message:</label>
+        <input type="text" id="input" name="userInput" autocomplete="off" placeholder="Type here..." />
+        <button type="submit">Send</button>
     </form>
 
-    <!-- Include the Socket.IO client library -->
+    <emoji-picker id="emojiPicker"></emoji-picker>
+    <button id="emojiButton">😊</button>
+
+    <input type="text" id="privateUser" placeholder="Send to (username)">
+    <input type="text" id="privateMessage" placeholder="Private message">
+    <button onclick="sendPrivateMessage()">Send Private</button>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Connect to the Socket.IO server (defaults to the server that served this page)
         const socket = io();
         let username = '';
 
-        // Get references to the HTML elements
+        document.getElementById('darkModeToggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
         const form = document.getElementById('form');
         const input = document.getElementById('input');
         const messages = document.getElementById('messages');
+        const typingIndicator = document.getElementById('typing-indicator');
 
-        // --- Get Username ---
         function getUsername() {
-            username = prompt("Please enter your username:");
+            username = prompt("Enter your username:");
             if (!username || username.trim() === '') {
                 username = `User_${Math.random().toString(36).substring(2, 7)}`;
-                alert(`No username entered. Assigned: ${username}`);
+                alert(`Assigned: ${username}`);
             }
-            socket.emit('set username', username); // Send username to server
+            socket.emit('set username', username);
         }
 
-        // --- Sending Messages ---
-        // Add an event listener for when the form is submitted
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission (page reload)
-            if (input.value && username) { // Check if the input field is not empty AND username is set
-                // Emit a 'chat message' event to the server with the input value
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (input.value && username) {
                 socket.emit('chat message', input.value);
-                input.value = ''; // Clear the input field
+                input.value = '';
             }
         });
 
-        // --- Receiving Messages ---
-        // Add an event listener for 'chat message' events coming FROM the server
-        // This is a CALLBACK function (the anonymous function provided here).
-        // It gets called *later* by the socket.io library when a 'chat message' event arrives.
-        socket.on('chat message', function(data) { // `function(data) {...}` is an ANONYMOUS FUNCTION
+        let typingTimer;
+        input.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+            socket.emit('typing');
+
+            typingTimer = setTimeout(() => {
+                socket.emit('stop typing');
+            }, 2000);
+        });
+
+        socket.on('typing', (user) => {
+            typingIndicator.textContent = `${user} is typing...`;
+        });
+
+        socket.on('stop typing', () => {
+            typingIndicator.textContent = '';
+        });
+
+        socket.on('chat message', (data) => {
             displayMessage(data.user, data.msg);
         });
 
-        // Listen for system messages (like join/leave/welcome)
-        socket.on('system message', function(msg) {
+        socket.on('system message', (msg) => {
             displayMessage('System', msg, true);
         });
 
-        // --- Utility function to display messages ---
         function displayMessage(user, msg, isSystem = false) {
-            const item = document.createElement('li'); // Create a new list item element
+            const item = document.createElement('li');
             if (isSystem) {
                 item.style.fontStyle = 'italic';
                 item.style.color = 'gray';
-                item.textContent = msg; // System messages don't show 'System:' prefix explicitly
+                item.textContent = msg;
             } else {
-                item.textContent = `${user}: ${msg}`; // Set its text content
+                item.textContent = `${user}: ${msg}`;
             }
-            messages.appendChild(item); // Add the list item to the messages list
-            window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
         }
 
-        // --- Optional: Listen for connect/disconnect events on client ---
+        function sendPrivateMessage() {
+            const toUser = document.getElementById('privateUser').value;
+            const privateMsg = document.getElementById('privateMessage').value;
+            socket.emit('private message', { to: toUser, msg: privateMsg });
+        }
+
+        document.getElementById('emojiButton').addEventListener('click', () => {
+            document.getElementById('emojiPicker').style.display = 'block';
+        });
+
+        document.getElementById('emojiPicker').addEventListener('emoji-click', (event) => {
+            input.value += event.detail.unicode;
+        });
+
         socket.on('connect', () => {
-            console.log('✅ Connected to server:', socket.id);
-            getUsername(); // Ask for username after connecting
+            console.log('✅ Connected:', socket.id);
+            getUsername();
         });
 
         socket.on('disconnect', () => {
-            console.log('❌ Disconnected from server');
-            displayMessage('System', 'You have been disconnected.', true);
+            displayMessage('System', 'Disconnected.', true);
         });
-
     </script>
 </body>
 </html>

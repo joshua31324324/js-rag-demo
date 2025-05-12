@@ -1,11 +1,11 @@
 // Import necessary modules
 import express from 'express';           // Web framework for Node.js
 import dotenv from 'dotenv';             // Loads environment variables from a .env file
-import { ChatOpenAI } from "@langchain/openai"; // OpenAI integration for LangChain
-import { HumanMessage, SystemMessage } from "@langchain/core/messages"; // Message types for LangChain
 import path from 'path';                 // Node.js path module for handling file paths
 import { fileURLToPath } from 'url';     // Utility to convert file URL to path (for ES Modules __dirname)
 import fs from 'fs';                     // Node.js file system module for reading files
+import axios from "axios";
+
 
 // Recreate __dirname functionality for ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +13,8 @@ const __dirname = path.dirname(__filename);
 
 // Load environment variables from the .env file in the parent directory
 // This allows sensitive information like API keys to be kept out of the code
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+console.log('Groq API Key:', process.env.GROQ_API_KEY);
 
 // --- Character Data Loading ---
 /**
@@ -106,12 +107,27 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); 
 
 // Initialize OpenAI client with the API key from environment variables
-const chat = new ChatOpenAI({
-    openAIApiKey: process.env.OPENAI_API_KEY, // Ensure OPENAI_API_KEY is in your .env file
-    modelName: "gpt-4o", // Or your preferred model
-    temperature: 0.7, // Controls randomness (creativity) of the response
-    streaming: true, // IMPORTANT: Enable streaming for SSE
-});
+
+const chat = async (userMessage) => {
+    try {
+        const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {  // Correct API URL
+            model: "llama3-8b-instant",  // Ensure this is a valid Groq model
+            messages: [{ role: "user", content: userMessage }],
+            temperature: 0.7
+        }, {
+            headers: {
+                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                "Content-Type": "application/json",
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("Groq API Error:", error.response ? error.response.data : error.message);
+        return { error: "Failed to retrieve response from Groq." };
+    }
+};
+
 // --- End Express Server Setup ---
 
 
@@ -121,58 +137,18 @@ const chat = new ChatOpenAI({
  * It uses Server-Sent Events (SSE) to stream the AI's response back to the client.
  */
 app.post('/chat', async (req, res) => {
-    // Extract the user's message from the request body
     const userMessage = req.body.message;
 
-    // Validate if the message exists
     if (!userMessage) {
         return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Set headers for Server-Sent Events (SSE)
-    // This allows the server to stream data to the client over a single connection
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders(); // Send headers immediately
-
-    let fullResponse = ""; // Variable to accumulate the full response if needed later
     try {
-        // Create the message history for the LangChain model
-        // It includes the system prompt (character) and the user's current message
-        const messages = [
-            new SystemMessage(characterSystemPrompt),
-            new HumanMessage(userMessage),
-        ];
-
-        // Use LangChain's stream method to get the response as a stream
-        const stream = await chat.stream(messages);
-
-        // Process the stream chunk by chunk
-        for await (const chunk of stream) {
-            // Each chunk contains a piece of the AI's response content
-            if (chunk.content) {
-                const content = chunk.content;
-                fullResponse += content; // Accumulate the response (optional)
-                
-                // Format the chunk as an SSE message (data: {json}\n\n)
-                const sseMessage = `data: ${JSON.stringify({ content: content })}\n\n`;
-                // Write the formatted message to the response stream
-                res.write(sseMessage);
-            }
-        }
-        
-        // Send a final SSE message to indicate the end of the stream
-        res.write(`data: ${JSON.stringify({ event: 'end' })}\n\n`);
-
+        const response = await chat(userMessage);
+        res.json({ content: response.choices[0].message.content });
     } catch (error) {
-        // Log any errors during streaming
-        console.error("Error during chat streaming:", error);
-        // Send an error message to the client via SSE
-        res.write(`data: ${JSON.stringify({ error: 'Failed to get response from AI' })}\n\n`);
-    } finally {
-        // End the response stream once processing is complete or an error occurred
-        res.end();
+        console.error("Error in chat API:", error);
+        res.status(500).json({ error: "Error fetching response." });
     }
 });
 // --- End Chat Endpoint ---
